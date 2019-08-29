@@ -30,12 +30,10 @@ if args.encode:
 if args.decode:
   strparam = args.decode
   results = {}
-  try:
-    results['base64'] = str(base64.urlsafe_b64decode(strparam.encode()), "utf-8")
-  except:
-    pass
+  results['base64'] = str(base64.urlsafe_b64decode(strparam.encode()), "utf-8")
+
   results['caesar'] = []
-  for i in range(0,24):
+  for i in range(0,25):
     results['caesar'].append(caesar(strparam, i))
   for k, v in results.items():
     print(k, v)
