@@ -38,6 +38,7 @@ base64 dGVzdGU=
 ```
 
 Decoding: 
+
 string
 ```
 $ strypt --encode teste
