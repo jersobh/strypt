@@ -57,3 +57,9 @@ output:
 ```
 caesar ['teste', 'uftuf', 'vguvg', 'whvwh', 'xiwxi', 'yjxyj', 'zkyzk', 'alzal', 'bmabm', 'cnbcn', 'docdo', 'epdep', 'fqefq', 'grfgr', 'hsghs', 'ithit', 'juiju', 'kvjkv', 'lwklw', 'mxlmx', 'nymny', 'oznoz', 'paopa', 'qbpqb']
 ```
+
+wordlist decoder:
+```
+$ strypt --list file.txt
+```
+outputs a file "hashes.txt"
