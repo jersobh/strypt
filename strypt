@@ -4,13 +4,6 @@ import argparse
 import base64
 import string
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--encode", help="Encode string")
-parser.add_argument("--decode", help="Decode string")
-parser.add_argument("--list", help=" Path to list. Generate a list of hashes from a list of words")
-args = parser.parse_args()
-
-
 def encode(string):
     results = {}
     results['md5'] = hashlib.md5(string.encode()).hexdigest()
@@ -18,19 +11,16 @@ def encode(string):
     results['sha256'] = hashlib.sha256(string.encode()).hexdigest()
     results['sha384'] = hashlib.sha3_384(string.encode()).hexdigest()
     results['sha512'] = hashlib.sha512(string.encode()).hexdigest()
-    results['base64'] = str(base64.b64encode(string.encode()), "utf-8")
+    results['base64'] = base64.b64encode(string.encode())
     return results
-
 
 def decode(decode_string):
     results = {}
-    results['base64'] = str(base64.urlsafe_b64decode(decode_string.encode()), "utf-8")
-    results['caesar'] = []
-    for i in range(0, 25):
-        results['caesar'].append(caesar(decode_string, i))
-    for k, v in results.items():
-        print(k, v)
-
+    results['base64'] = base64.urlsafe_b64decode(decode_string.encode()).decode("utf-8")
+    results['caesar'] = {}
+    for i in range(1, 26):
+        results['caesar'][i] = caesar(decode_string, i)
+    return results
 
 def caesar(plaintext, shift):
     alphabet = string.ascii_lowercase
@@ -38,30 +28,106 @@ def caesar(plaintext, shift):
     table = str.maketrans(alphabet, shifted_alphabet)
     return plaintext.translate(table)
 
+def frequency_analysis(string):
+    freq = {}
+    for char in string:
+        freq[char] = freq.get(char, 0) + 1
+    return freq
 
-if args.encode:
-    try:
-        print(encode(args.encode))
-    except Exception as e:
-        print(e)
+def rot13(string):
+    return string.translate(str.maketrans(string.ascii_lowercase + string.ascii_uppercase,
+                                         string.ascii_lowercase[13:] + string.ascii_lowercase[:13] +
+                                         string.ascii_uppercase[13:] + string.ascii_uppercase[:13]))
 
-if args.decode:
-    try:
-        print(decode(args.decode))
-    except Exception as e:
-        print(e)
+def xor_encrypt(string, key):
+    encrypted = ""
+    for i in range(len(string)):
+        encrypted += chr(ord(string[i]) ^ ord(key[i % len(key)]))
+    return encrypted
 
+def xor_decrypt(string, key):
+    return xor_encrypt(string, key)  # XOR encryption and decryption are the same
 
-if args.list:
-    try:
-        with open('hashes.txt', 'w') as file:
-            path = args.list
-            with open(path) as f:
-                words = f.readlines()
-                for word in words:
-                    for k, v in encode(word).items():
-                        file.write(f'{v}\n')
+def reverse_string(string):
+    return string[::-1]
 
-        print('File hashes.txt successfully generated!')
-    except Exception as e:
-        print(e)
+def binary_to_text(binary_string):
+    text = "".join(chr(int(binary_string[i:i+8], 2)) for i in range(0, len(binary_string), 8))
+    return text
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--encode", help="Encode string")
+    parser.add_argument("--decode", help="Decode string")
+    parser.add_argument("--list", type=argparse.FileType('r'), help="Path to list. Generate a list of hashes from a list of words")
+    parser.add_argument("--freq", help="Frequency analysis of characters in a string")
+    parser.add_argument("--rot13", help="Perform ROT13 encoding and decoding")
+    parser.add_argument("--xor-encrypt", nargs=2, metavar=('STRING', 'KEY'), help="XOR encrypt a string with a key")
+    parser.add_argument("--xor-decrypt", nargs=2, metavar=('STRING', 'KEY'), help="XOR decrypt a string with a key")
+    parser.add_argument("--reverse", help="Reverse a string")
+    parser.add_argument("--binary-to-text", help="Convert binary to text")
+    args = parser.parse_args()
+
+    if args.encode:
+        try:
+            print(encode(args.encode))
+        except Exception as e:
+            print(e)
+
+    if args.decode:
+        try:
+            decoded_results = decode(args.decode)
+            for k, v in decoded_results.items():
+                print(k, v)
+        except Exception as e:
+            print(e)
+
+    if args.list:
+        try:
+            generate_hash_list(args.list)
+        except Exception as e:
+            print(e)
+
+    if args.freq:
+        try:
+            freq_analysis_result = frequency_analysis(args.freq)
+            print("Frequency Analysis:")
+            for char, count in freq_analysis_result.items():
+                print(f"{char}: {count}")
+        except Exception as e:
+            print(e)
+
+    if args.rot13:
+        try:
+            print("ROT13 encoded/decoded string:", rot13(args.rot13))
+        except Exception as e:
+            print(e)
+
+    if args.xor_encrypt:
+        try:
+            encrypted = xor_encrypt(args.xor_encrypt[0], args.xor_encrypt[1])
+            print("XOR Encrypted:", encrypted)
+        except Exception as e:
+            print(e)
+
+    if args.xor_decrypt:
+        try:
+            decrypted = xor_decrypt(args.xor_decrypt[0], args.xor_decrypt[1])
+            print("XOR Decrypted:", decrypted)
+        except Exception as e:
+            print(e)
+
+    if args.reverse:
+        try:
+            print("Reversed string:", reverse_string(args.reverse))
+        except Exception as e:
+            print(e)
+
+    if args.binary_to_text:
+        try:
+            print("Text:", binary_to_text(args.binary_to_text))
+        except Exception as e:
+            print(e)
+
+if __name__ == "__main__":
+    main()
